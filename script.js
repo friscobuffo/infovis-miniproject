@@ -26,37 +26,45 @@ xScale.domain(xDomain);
 yScale.domain(yDomain);
 heightScale.domain(yDomain);
 
+function buildTriangle(triangle) {
+    let x = parseFloat(xScale(triangle.x));
+    let y = parseFloat(yScale(triangle.y));
+    let base = parseFloat(xScale(triangle.base));
+    let height = parseFloat(heightScale(triangle.height));
+    return `${x},${y} ${x+base},${y} ${x+(base/2)},${y-height}`;
+}
+
 let lastClickedTriangle = null;
 
-function drawBoard(svgBoard, data) {
+function updateBoard(svgBoard, data) {
     svgBoard.selectAll("polygon")
         .data(data)
-        .join("polygon")
-        .attr("fill", function(triangle) {
-            return `hsl(${triangle.hue}, 100%, 50%)`;
-        })
         .transition()
         .duration(750)
-        .attr("points", function(triangle) {
-            let x = parseFloat(xScale(triangle.x));
-            let y = parseFloat(yScale(triangle.y));
-            let base = parseFloat(xScale(triangle.base));
-            let height = parseFloat(heightScale(triangle.height));
-            return `${x},${y} ${x+base},${y} ${x+(base/2)},${y-height}`;
-        })
-        .attr("stroke", "black")
+        .attr("points", buildTriangle)
         .duration(250)
         .attr("stroke-width", function(triangle) {
             if (triangle.hasEdge) return 3;
             return 0;
         });
+}
 
+function fillBoard(svgBoard, data) {
     svgBoard.selectAll("polygon")
+        .data(data)
+        .enter()
+        .append("polygon")
+        .attr("fill", function(triangle) {
+            return `hsl(${triangle.hue}, 100%, 50%)`;
+        })
+        .attr("stroke", "black")
+        .attr("points", buildTriangle)
+        .attr("stroke-width", 0)
         .on("click", function(event, triangle) {
             if (lastClickedTriangle == null) {
                 lastClickedTriangle = triangle;
                 triangle.hasEdge = true;
-                drawBoard(svgBoard, data);
+                updateBoard(svgBoard, data);
             }
             else {
                 lastClickedTriangle.hasEdge = false;
@@ -69,7 +77,7 @@ function drawBoard(svgBoard, data) {
                 lastClickedTriangle.base = base2;
                 lastClickedTriangle.height = height2;
                 lastClickedTriangle = null;
-                drawBoard(svgBoard, data);
+                updateBoard(svgBoard, data);
             }
         });
 }
@@ -87,6 +95,6 @@ d3.json("data.json")
         yScale.range([boardHeight, 0]);
         heightScale.range([0, boardHeight]);
 
-        drawBoard(svgBoard, data);
+        fillBoard(svgBoard, data);
     })
     .catch(error => console.log(error));
