@@ -34,8 +34,6 @@ function buildTriangle(triangle) {
     return `${x},${y} ${x+base},${y} ${x+(base/2)},${y-height}`;
 }
 
-let lastClickedTriangle = null;
-
 function updateBoard(svgBoard, data) {
     svgBoard.selectAll("polygon")
         .data(data)
@@ -48,6 +46,8 @@ function updateBoard(svgBoard, data) {
             return 0;
         });
 }
+
+let lastClickedTriangle = null;
 
 function fillBoard(svgBoard, data) {
     svgBoard.selectAll("polygon")
