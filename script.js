@@ -20,8 +20,8 @@ let xScale = d3.scaleLinear();
 let yScale = d3.scaleLinear();
 let heightScale = d3.scaleLinear();
 
-xDomain = [0, 1000];
-yDomain = [0, 800];
+const xDomain = [0, 1000];
+const yDomain = [0, 800];
 xScale.domain(xDomain);
 yScale.domain(yDomain);
 heightScale.domain(yDomain);
@@ -68,10 +68,10 @@ function fillBoard(svgBoard, data) {
             }
             else {
                 lastClickedTriangle.hasEdge = false;
-                const base1 = lastClickedTriangle.base;
-                const height1 = lastClickedTriangle.height;
-                const base2 = triangle.base;
-                const height2 = triangle.height;
+                let base1 = lastClickedTriangle.base;
+                let height1 = lastClickedTriangle.height;
+                let base2 = triangle.base;
+                let height2 = triangle.height;
                 triangle.base = base1;
                 triangle.height = height1;
                 lastClickedTriangle.base = base2;
@@ -84,8 +84,8 @@ function fillBoard(svgBoard, data) {
 
 d3.json("data.json")
     .then(function(data) {
-        let boardHeight = Math.floor(0.8*window.screen.height);
-        let boardWidth = Math.floor(0.8*window.screen.width);
+        const boardHeight = Math.floor(0.8*window.screen.height);
+        const boardWidth = Math.floor(0.8*window.screen.width);
 
         let svgBoard = d3.select("#svg-board");
         svgBoard.attr("width", boardWidth);
