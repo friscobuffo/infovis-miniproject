@@ -16,10 +16,77 @@ deve essere arbitrario) sull'intervallo dei valori delle coordinate, che
 dipende dalla tua interfaccia.
 */
 
-function script(data) {
-    console.log(data[0]);
+let xScale = d3.scaleLinear();
+let yScale = d3.scaleLinear();
+let heightScale = d3.scaleLinear();
+
+xDomain = [0, 1000];
+yDomain = [0, 800];
+xScale.domain(xDomain);
+yScale.domain(yDomain);
+heightScale.domain(yDomain);
+
+let lastClickedTriangle = null;
+
+function drawBoard(svgBoard, data) {
+    svgBoard.selectAll("polygon")
+        .data(data)
+        .join("polygon")
+        .attr("fill", function(triangle) {
+            return `hsl(${triangle.hue}, 100%, 50%)`;
+        })
+        .transition()
+        .duration(750)
+        .attr("points", function(triangle) {
+            let x = parseFloat(xScale(triangle.x));
+            let y = parseFloat(yScale(triangle.y));
+            let base = parseFloat(xScale(triangle.base));
+            let height = parseFloat(heightScale(triangle.height));
+            return `${x},${y} ${x+base},${y} ${x+(base/2)},${y-height}`;
+        })
+        .attr("stroke", "black")
+        .duration(250)
+        .attr("stroke-width", function(triangle) {
+            if (triangle.hasEdge) return 3;
+            return 0;
+        });
+
+    svgBoard.selectAll("polygon")
+        .on("click", function(event, triangle) {
+            if (lastClickedTriangle == null) {
+                lastClickedTriangle = triangle;
+                triangle.hasEdge = true;
+                drawBoard(svgBoard, data);
+            }
+            else {
+                lastClickedTriangle.hasEdge = false;
+                const base1 = lastClickedTriangle.base;
+                const height1 = lastClickedTriangle.height;
+                const base2 = triangle.base;
+                const height2 = triangle.height;
+                triangle.base = base1;
+                triangle.height = height1;
+                lastClickedTriangle.base = base2;
+                lastClickedTriangle.height = height2;
+                lastClickedTriangle = null;
+                drawBoard(svgBoard, data);
+            }
+        });
 }
 
 d3.json("data.json")
-    .then(script)
+    .then(function(data) {
+        let boardHeight = Math.floor(0.8*window.screen.height);
+        let boardWidth = Math.floor(0.8*window.screen.width);
+
+        let svgBoard = d3.select("#svg-board");
+        svgBoard.attr("width", boardWidth);
+        svgBoard.attr("height", boardHeight);
+
+        xScale.range([0, boardWidth]);
+        yScale.range([boardHeight, 0]);
+        heightScale.range([0, boardHeight]);
+
+        drawBoard(svgBoard, data);
+    })
     .catch(error => console.log(error));
