@@ -16,16 +16,6 @@ deve essere arbitrario) sull'intervallo dei valori delle coordinate, che
 dipende dalla tua interfaccia.
 */
 
-let xScale = d3.scaleLinear();
-let yScale = d3.scaleLinear();
-let heightScale = d3.scaleLinear();
-
-const xDomain = [0, 1000];
-const yDomain = [0, 800];
-xScale.domain(xDomain);
-yScale.domain(yDomain);
-heightScale.domain(yDomain);
-
 function buildTriangle(triangle) {
     let x = parseFloat(xScale(triangle.x));
     let y = parseFloat(yScale(triangle.y));
@@ -82,19 +72,34 @@ function fillBoard(svgBoard, data) {
         });
 }
 
+const boardHeight = Math.floor(0.8*window.screen.height);
+const boardWidth = Math.floor(0.8*window.screen.width);
+
+let xScale = d3.scaleLinear();
+let yScale = d3.scaleLinear();
+let heightScale = d3.scaleLinear();
+
+function computeScales(data) {
+    let maxX = d3.max(data, function(element){ return element["x"]; });
+    let maxY = d3.max(data, function(element){ return element["y"]; });
+    let maxWidth = d3.max(data, function(element){ return element["base"]; });
+    let maxHeight = d3.max(data, function(element){ return element["height"]; });
+
+    xScale.domain([0, 1.1*(maxX+maxWidth)]);
+    yScale.domain([0, 1.1*(maxY+maxHeight)]);
+    heightScale.domain([0, 1.1*(maxY+maxHeight)]);
+
+    xScale.range([0, boardWidth]);
+    yScale.range([boardHeight, 0]);
+    heightScale.range([0, boardHeight]);
+}
+
 d3.json("data.json")
     .then(function(data) {
-        const boardHeight = Math.floor(0.8*window.screen.height);
-        const boardWidth = Math.floor(0.8*window.screen.width);
-
+        computeScales(data);
         let svgBoard = d3.select("#svg-board");
         svgBoard.attr("width", boardWidth);
         svgBoard.attr("height", boardHeight);
-
-        xScale.range([0, boardWidth]);
-        yScale.range([boardHeight, 0]);
-        heightScale.range([0, boardHeight]);
-
         fillBoard(svgBoard, data);
     })
     .catch(error => console.log(error));
